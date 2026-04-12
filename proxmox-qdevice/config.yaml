@@ -8,7 +8,6 @@ url: "https://github.com/acon96/proxmox-qdevice-addon"
 arch:
   - aarch64
   - amd64
-  - armv7
 startup: services
 boot: auto
 init: false
@@ -20,7 +19,7 @@ ports_description:
   5403/tcp: Corosync QNetd service port
 host_network: false
 options:
-  root_password: "changeme"
+  root_password: "password"
   ssh_port: 22
   qnetd_port: 5403
 schema:
