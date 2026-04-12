@@ -20,7 +20,7 @@ ports_description:
   5403/tcp: Corosync QNetd service port
 host_network: false
 options:
-  root_password: "changeme"
+  root_password: "password"
   ssh_port: 22
   qnetd_port: 5403
 schema:
