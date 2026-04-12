@@ -8,7 +8,6 @@ url: "https://github.com/acon96/proxmox-qdevice-addon"
 arch:
   - aarch64
   - amd64
-  - armv7
 startup: services
 boot: auto
 init: false
