@@ -9,24 +9,11 @@ _External Corosync QNetd service for Proxmox VE clusters._
 
 Proxmox clusters work best with an odd number of votes. In a 2-node cluster, this app supplies the third vote by running `corosync-qnetd`, which lets the first node that boots reach quorum and start workloads normally.
 
-This app must run on a system that is independent of the Proxmox cluster itself. Do not run it inside a VM or container hosted by that same cluster.
-
-## Repository Layout
-
-This repository contains a single Home Assistant app in `proxmox-qdevice/`.
-
-## What It Does
-
-- Exposes SSH so `pvecm qdevice setup` can complete certificate exchange.
-- Runs `corosync-qnetd` on port `5403` as the quorum service.
-- Keeps both processes supervised inside Home Assistant.
-- Publishes multi-architecture images to `ghcr.io/acon96/app-proxmox-qdevice` through GitHub Actions.
+> Note: This app must run on a system that is independent of the Proxmox cluster itself. **Do not run this app on Home Assistant OS that is running as a VM hosted by your Proxmox cluster.**  I run my Home Assistant instance on a Raspberry Pi, which is a perfect host for a QDevice, that is separate from the Proxmox nodes themselves.
 
 ## Install
 
-See [QUICKSTART.md](./QUICKSTART.md) for the shortest path from install to a working Proxmox qdevice.
-
-Repository URL for Home Assistant:
+Install the add-on repository in Home Assistant by clicking the link above OR you can add a repository by going to the Supervisor panel in Home Assistant, clicking on the store icon in the top right, copy/paste the URL of your repository from below into the repository textarea and click on Save.
 
 ```text
 https://github.com/acon96/proxmox-qdevice-addon
@@ -34,21 +21,38 @@ https://github.com/acon96/proxmox-qdevice-addon
 
 ## Configuration
 
-```yaml
-root_password: "replace-this-immediately"
-ssh_port: 22
-qnetd_port: 5403
-```
+Options Available:
 
 - `root_password`: Required. Proxmox uses this during `pvecm qdevice setup`.
-- `ssh_port`: SSH listener for the setup handshake. Default: `22`.
+- `ssh_port`: SSH listener for the setup handshake. Default: `2223`.
 - `qnetd_port`: Corosync QNetd port. Default: `5403`.
 
 Change the default password before starting the app.
 
 ## Usage
 
-After the app is running, configure the cluster from any Proxmox node:
+### 1. Configure SSH on Each Proxmox Node
+
+Since Home Assistant typically uses non-standard SSH ports, you must configure SSH on **every Proxmox cluster node** to use the correct port. On each node, add this to `/root/.ssh/config`:
+
+```bash
+Host <home-assistant-ip>
+    Port 2223
+```
+
+Replace `<home-assistant-ip>` with your Home Assistant host's IP address. If you changed `ssh_port` to a different value, use that instead of `2223`.
+
+### 2. Install Prerequisites on Proxmox Nodes
+
+On **every Proxmox node**, install the QDevice client package:
+
+```bash
+apt update && apt install -y corosync-qdevice
+```
+
+### 3. Set Up the QDevice
+
+From any Proxmox node, run:
 
 ```bash
 pvecm qdevice setup <home-assistant-ip>
@@ -59,8 +63,9 @@ You should see total expected votes increase by one and `Qdevice` appear in clus
 
 ## Troubleshooting
 
-- `Connection refused`: Verify the app is running and ports `22` and `5403` are reachable from every Proxmox node.
+- `Connection refused`: Verify the app is running, ports `2223` and `5403` are reachable from every Proxmox node, and that SSH config is set up correctly on each node.
 - `Authentication failed`: Recheck `root_password`, restart the app, and run setup again.
+- `corosync-qdevice-net-certutil: command not found`: Install `corosync-qdevice` package on all Proxmox nodes.
 - No quorum improvement: Confirm the app host is independent from the Proxmox cluster and that `pvecm status` shows `Qdevice` online.
 
 ## References

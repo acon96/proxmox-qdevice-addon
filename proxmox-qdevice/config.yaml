@@ -12,7 +12,7 @@ startup: services
 boot: auto
 init: false
 ports:
-  22/tcp: 22
+  22/tcp: 2223
   5403/tcp: 5403
 ports_description:
   22/tcp: SSH server for Proxmox cluster authentication
@@ -20,7 +20,7 @@ ports_description:
 host_network: false
 options:
   root_password: "password"
-  ssh_port: 22
+  ssh_port: 2223
   qnetd_port: 5403
 schema:
   root_password: password
